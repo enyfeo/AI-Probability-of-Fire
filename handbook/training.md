@@ -4,7 +4,7 @@ PoF uses XGBoost, a powerful gradient-boosted decision-tree algorithm widely app
 
 The training procedure follows a simple, reproducible workflow based on a probabilistic classifier:
 
-__Prepare the training dataset__
+## Prepare the training dataset
 
 You will assemble a table where each row represents a gridcell in space and time (daily & 9km grid) and includes:
 
@@ -24,7 +24,7 @@ You will assemble a table where each row represents a gridcell in space and time
 
 The data generation script should have synthesised your data into a DataFrame stored in a Parquet file, which is now ready for training.
 
-__Split the data__
+## Split the data
 
 ---
 
@@ -38,7 +38,7 @@ __Split the data__
 
 We typically use a random stratified split.
 
-__Define the XGBoost model__
+## Define the XGBoost model
 
 We configure the key parameters:
 
@@ -56,7 +56,7 @@ We configure the key parameters:
 
 You will need to adjust these parameters depending on your region and data volume.
 
-__Generate PoF predictions__
+## Generate PoF predictions
 
 Once trained, the model outputs a probability between 0 and 1 representing the likelihood that at least one fire will occur under the given conditions withing a gridcell on a given day.
 
@@ -64,7 +64,7 @@ Once trained, the model outputs a probability between 0 and 1 representing the l
 These are the core PoF predictions you will visualise and evaluate.
 </span>
 
-__Evaluate the model__
+## Evaluate the model
 
 We can assess the model skill using tools such as:
 ROC curve
@@ -80,10 +80,6 @@ The script saves the trained model for reuse (POF_model.joblib) . Later versions
 
 ---
 
-<div style="text-align:center; margin:40px 0; font-weight:bold;">
-  <h3 style="margin-top:0; color:#003e74;">🎯 Final result</h3>
-  <p style="margin:0; font-size:1.05em; color:#003e74;">
-    A trained, validated XGBoost model providing daily probability-of-fire estimates
-    from environmental predictors
-  </p>
-</div>
+:::{important} 🎯 Final result
+   A trained, validated XGBoost model providing daily probability-of-fire estimates
+  from environmental predictors
