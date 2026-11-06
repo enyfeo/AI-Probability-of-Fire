@@ -16,9 +16,7 @@ You will not be able to reproduce the exact configuration run at ECMWF, as it us
 Data sources to train the PoF
 :::
     
-<div style="text-align:center; margin:40px 0; font-weight:bold;">
-    Weather Data
-</div>
+## Weather Data
 
 <a href="https://doi.org/10.1175/JAMC-D-15-0297.1" target="_blank">
 In fuel-rich environments, weather is the dominant control of fire behaviour.</a>
@@ -48,8 +46,8 @@ To model how vegetation influences wildfire behaviour, two key aspects must be c
 
 <a href="https://doi.org/10.5194/bg-21-279-2024" target="_blank"> __Fuel load__ </a> represents the total mass of above-ground biomass available to burn. It includes:
 
-🌿 Foliage (live and dead)
-🌳 Wood (live and dead)
+* 🌿 Foliage (live and dead)
+* 🌳 Wood (live and dead)
 
 We estimate fuel load by combining Satellite-derived Above-Ground Biomass (AGB) from ESA-CCI (2010 baseline), and Daily Net Ecosystem Exchange (NEE) from the ECLand land-surface model (forced by ERA5) with <a href="https://doi.org/10.5194/acp-16-10399-2016" target="_blank"> bias correction from atmospheric inversions. </a>
 
@@ -59,20 +57,18 @@ This approach allows us to reconstruct daily biomass evolution at ~9 km resoluti
 
 __Live Fuel Moisture Content (LFMC)__
 
-💦🍃 LFMC expresses how much water is contained in living vegetation relative to its dry mass. It determines how easily plants ignite and how fast a fire can spread.
+Live Fuel Moisture Content [LFMC](https://doi.org/10.5194/bg-21-279-2024) expresses how much water is contained in living vegetation relative to its dry mass. It determines how easily plants ignite and how fast a fire can spread.
 We use a semi-empirical model, trained on the <a href="https://doi.org/10.1038/s41597-019-0164-9" target="_blank"> Globe-LFMC in-situ dataset</a>, to estimate daily LFMC from:
 
-🌿 **Leaf Area Index (LAI)**
-
-💧 **Soil moisture (root-weighted)**
-
-🌳 **Vegetation type**
+* 🌿 **Leaf Area Index (LAI)**
+* 💧 **Soil moisture (root-weighted)**
+* 🌳 **Vegetation type**
 
 The model ensures physically realistic moisture ranges and captures seasonal vegetation responses to drought and growth cycles.
 
-<a href="https://doi.org/10.5194/bg-21-279-2024" target="_blank"> __Dead Fuel Moisture Content (DFMC)__ </a>
+### Dead Fuel Moisture Content
 
-DFMC describes the moisture content of dead leaves, litter, and woody debris—fuels that respond directly to weather.
+Dead Fuel Moisture Content ([DFMC](https://doi.org/10.5194/bg-21-279-2024)) describes the moisture content of dead leaves, litter, and woody debris—fuels that respond directly to weather.
 We generalize the <a href="https://doi.org/10.1139/x00-032" target="_blank">Nelson (2000)</a> physical model to estimate DFMC for standard dead-fuel classes (1h, 10h, 100h, 1000h). Short-lag fuels (1h, 10h), which represent dead foliage, respond to fast humidity changes. Long-lag fuels (100h, 1000h), which represent dead wood, respond to multi-day weather patterns. DFMC for foliage and wood is derived by weighting appropriate fuel classes based on vegetation type.
 
 ---
@@ -81,13 +77,13 @@ We generalize the <a href="https://doi.org/10.1139/x00-032" target="_blank">Nels
     Sources of Ignitions
 </div>
 
-**Road Density**
+### Road Density
 
 Roads facilitate human access to wildland areas, increasing the likelihood of ignitions through activities such as agriculture, forestry, and recreation. However, they may also contribute to fire suppression efficiency and serve as firebreaks, creating a complex relationship between road density and fire outcomes.
 
 The <a href="https://doi.org/10.1088/1748-9326/aabd42" target="_blank"> Global Roads Inventory Project (GRIP) dataset</a>, which provides a global map of road networks at ~8 km resolution, has been regridded for use here.
 
-**Population Density**
+### Population Density
 
 Around 90% of wildfires are human‑ignited, making human presence a useful indicator of potential fire occurrence. Fire incidence generally rises with population density but eventually saturates and at very high densities, suppression efforts typically limit the potential for large wildfires.
 
@@ -95,9 +91,8 @@ The data provided here are derived from the <a href="https://doi.org/10.7927/H49
 
 ---
 
-<div style="text-align:center; margin:40px 0; font-weight:bold;">
-    Fire Data
-</div>
+## Fire Data
+
 
 Various sensors and fire products are available for use in a PoF-style system. Here we attempt a binary classifier model, that is an indication of the probability of a fire yes/no. As such we use hotspot detections rather than burned area.
 
