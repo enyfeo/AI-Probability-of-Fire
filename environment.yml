@@ -1,4 +1,4 @@
-name: POF_IN_A_BOX
+name: POF_BOOK
 channels:
 - conda-forge
 - nodefaults
@@ -7,6 +7,7 @@ dependencies:
 - xarray
 - netcdf4
 - cdsapi
+- cartopy
 - numpy
 - joblib
 - matplotlib
@@ -19,3 +20,6 @@ dependencies:
 - cftime
 - pip
 - python=3.14
+- ecmwf-opendata
+- cfgrib
+- eccodes

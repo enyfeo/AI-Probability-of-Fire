@@ -1,8 +1,7 @@
 ---
-title: "🔮 Forecasting With PoF"
-show-body-title: false
+title: "Forecasting With PoF"
 ---
-
+![logo](./images/ECMWF.png)
 
 # Using Your PoF Model
 
@@ -25,6 +24,7 @@ As with the training workflow, you must then load the required input data:
 ---
 
 ## Running the Prediction
+
 
 After constructing a dataframe that matches the structure used during training, you can run the model in probability mode to estimate the likelihood of fire occurrence (`1`) using: model.predict_proba(X_pred)
 
