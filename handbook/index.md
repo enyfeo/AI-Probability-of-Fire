@@ -83,7 +83,7 @@ All this is before we even consider the factors that might start a wildfire in t
 These shortcomings highlight the need for more advanced forecasting techniques to accurately assess wildfire risk across diverse landscapes.
 ```
 
-# Machine learning evolution
+## Machine learning evolution
 
 In recent months, there has been a remarkable growth in the integration of machine learning into weather forecasting systems. **With the intricate dynamics governing wildfires, it seems only natural to explore similar applications of machine learning in fire forecasting.**
 
