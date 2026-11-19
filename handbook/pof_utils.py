@@ -47,10 +47,29 @@ PARAM_IDS = {
     "DFMC_1000h": 9,
     # ECMWF local active-fire parameter (paramId 210097).
     "ACTIVE_FIRE": {"discipline": 192, "parameterCategory": 210, "parameterNumber": 97},
-    "ws": 11,
-    "rh": 12,
-    "t2m": 13,
-    "tp": 14,
+    "ws": {"discipline": 10, "parameterCategory": 0, "parameterNumber": 40,
+           "typeOfFirstFixedSurface": 102,
+           "scaledValueOfFirstFixedSurface": 10,
+           "scaleFactorOfFirstFixedSurface": 0,
+           "typeOfStatisticalProcessing": 0},
+    "rh": {"discipline": 0,
+           "parameterCategory": 1,
+           "parameterNumber": 1,
+           "typeOfStatisticalProcessing": 0},
+    "t2m": {"discipline": 0,
+            "parameterCategory": 0,
+            "parameterNumber": 0,
+            "typeOfFirstFixedSurface": 103,
+            "scaledValueOfFirstFixedSurface": 2,
+            "scaleFactorOfFirstFixedSurface": 0,
+            "typeOfStatisticalProcessing": 0},
+    "tp": {"discipline": 0,
+           "parameterCategory": 1,
+           "parameterNumber": 52,
+           "typeOfFirstFixedSurface": 1,
+           "indicatorOfUnitForTimeRange": 1,
+           "typeOfStatisticalProcessing": 1,
+           "lengthOfTimeRange": 24},
     "Live_Leaf": {"discipline": 2, "parameterCategory": 4, "parameterNumber": 27},
     "Live_Wood": {"discipline": 2, "parameterCategory": 4, "parameterNumber": 28},
     "Dead_Foliage": {"discipline": 2, "parameterCategory": 4, "parameterNumber": 29},
@@ -384,51 +403,58 @@ def write_grib_dataset(ds, path, parameter_ids, valid_date, template_path=None):
         if template.shape != (len(lat), len(lon)):
             raise ValueError(f"Template grid {template.shape} does not match output grid {(len(lat), len(lon))}")
 
+    grid_metadata = {}
+    if isinstance(template, str):
+        grid_metadata = {
+            "gridType": "regular_ll",
+            "Ni": len(lon),
+            "Nj": len(lat),
+            "latitudeOfFirstGridPointInDegrees": float(lat[0]),
+            "longitudeOfFirstGridPointInDegrees": float(lon[0]),
+            "latitudeOfLastGridPointInDegrees": float(lat[-1]),
+            "longitudeOfLastGridPointInDegrees": float(lon[-1]),
+            "iDirectionIncrementInDegrees": float(lon_step),
+            "jDirectionIncrementInDegrees": float(lat_step),
+            "iScansNegatively": int(lon[-1] < lon[0]),
+            "jScansPositively": int(lat[-1] > lat[0]),
+            "bitsPerValue": 24,
+        }
+
+    fields = []
+    for variable_name, variable in ds.data_vars.items():
+        time_dims = [dim for dim in variable.dims if dim not in SPATIAL_DIMS]
+        if len(time_dims) > 1:
+            raise ValueError(f"GRIB output supports at most one time dimension, found {time_dims}")
+        if time_dims:
+            field = variable.transpose(time_dims[0], lat_name, lon_name).values
+        else:
+            field = variable.transpose(lat_name, lon_name).values[np.newaxis, ...]
+
+        parameter = parameter_ids[variable_name]
+        parameter_metadata = (
+            dict(parameter)
+            if isinstance(parameter, dict)
+            else {"discipline": 0, "parameterCategory": 191, "parameterNumber": parameter}
+        )
+        fields.append((field, parameter_metadata))
+
     encoder = ekd.create_encoder("grib")
+    record_count = max((len(field) for field, _ in fields), default=0)
     with open(path, "wb") as output_file:
-        for variable_name, variable in ds.data_vars.items():
-            time_dims = [dim for dim in variable.dims if dim not in SPATIAL_DIMS]
-            if len(time_dims) > 1:
-                raise ValueError(f"GRIB output supports at most one time dimension, found {time_dims}")
-            if time_dims:
-                field = variable.transpose(time_dims[0], lat_name, lon_name).values
-            else:
-                field = variable.transpose(lat_name, lon_name).values[np.newaxis, ...]
-
-            parameter = parameter_ids[variable_name]
-            parameter_metadata = (
-                dict(parameter)
-                if isinstance(parameter, dict)
-                else {"discipline": 0, "parameterCategory": 191, "parameterNumber": parameter}
-            )
-            grid_metadata = {}
-            if isinstance(template, str):
-                grid_metadata = {
-                    "gridType": "regular_ll",
-                    "Ni": len(lon),
-                    "Nj": len(lat),
-                    "latitudeOfFirstGridPointInDegrees": float(lat[0]),
-                    "longitudeOfFirstGridPointInDegrees": float(lon[0]),
-                    "latitudeOfLastGridPointInDegrees": float(lat[-1]),
-                    "longitudeOfLastGridPointInDegrees": float(lon[-1]),
-                    "iDirectionIncrementInDegrees": float(lon_step),
-                    "jDirectionIncrementInDegrees": float(lat_step),
-                    "iScansNegatively": int(lon[-1] < lon[0]),
-                    "jScansPositively": int(lat[-1] > lat[0]),
-                    "bitsPerValue": 24,
-                }
-
-            for index, values in enumerate(field):
-                field_date = output_date + datetime.timedelta(days=index)
-                metadata = parameter_metadata | grid_metadata | {
-                    "dataDate": int(field_date.strftime("%Y%m%d")),
-                    "dataTime": 0,
-                    "forecastTime": 0,
-                }
+        for index in range(record_count):
+            field_date = output_date + datetime.timedelta(days=index)
+            date_metadata = {
+                "dataDate": int(field_date.strftime("%Y%m%d")),
+                "dataTime": 0,
+                "forecastTime": 0,
+            }
+            for field, parameter_metadata in fields:
+                if index >= len(field):
+                    continue
                 encoded = encoder.encode(
-                    values=np.asarray(values, dtype=float),
+                    values=np.asarray(field[index], dtype=float),
                     template=template,
-                    metadata=metadata,
+                    metadata=parameter_metadata | grid_metadata | date_metadata,
                     missing_value=9999.0,
                 )
                 encoded.to_file(output_file)
@@ -448,8 +474,7 @@ def relative_humidity(t2m, d2m):
 
 
 def wind_speed(u10, v10):
-    # Squared wind speed (no square root): the trained model expects this feature.
-    return u10**2 + v10**2
+    return np.sqrt(u10**2 + v10**2) 
 
 
 ############################################################
