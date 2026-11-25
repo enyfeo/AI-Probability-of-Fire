@@ -47,29 +47,10 @@ PARAM_IDS = {
     "DFMC_1000h": 9,
     # ECMWF local active-fire parameter (paramId 210097).
     "ACTIVE_FIRE": {"discipline": 192, "parameterCategory": 210, "parameterNumber": 97},
-    "ws": {"discipline": 10, "parameterCategory": 0, "parameterNumber": 40,
-           "typeOfFirstFixedSurface": 102,
-           "scaledValueOfFirstFixedSurface": 10,
-           "scaleFactorOfFirstFixedSurface": 0,
-           "typeOfStatisticalProcessing": 0},
-    "rh": {"discipline": 0,
-           "parameterCategory": 1,
-           "parameterNumber": 1,
-           "typeOfStatisticalProcessing": 0},
-    "t2m": {"discipline": 0,
-            "parameterCategory": 0,
-            "parameterNumber": 0,
-            "typeOfFirstFixedSurface": 103,
-            "scaledValueOfFirstFixedSurface": 2,
-            "scaleFactorOfFirstFixedSurface": 0,
-            "typeOfStatisticalProcessing": 0},
-    "tp": {"discipline": 0,
-           "parameterCategory": 1,
-           "parameterNumber": 52,
-           "typeOfFirstFixedSurface": 1,
-           "indicatorOfUnitForTimeRange": 1,
-           "typeOfStatisticalProcessing": 1,
-           "lengthOfTimeRange": 24},
+    "ws": 11,
+    "rh": 12,
+    "t2m": 13,
+    "tp": 14,
     "Live_Leaf": {"discipline": 2, "parameterCategory": 4, "parameterNumber": 27},
     "Live_Wood": {"discipline": 2, "parameterCategory": 4, "parameterNumber": 28},
     "Dead_Foliage": {"discipline": 2, "parameterCategory": 4, "parameterNumber": 29},
@@ -474,7 +455,7 @@ def relative_humidity(t2m, d2m):
 
 
 def wind_speed(u10, v10):
-    return np.sqrt(u10**2 + v10**2) 
+    return np.hypot(u10, v10)
 
 
 ############################################################
